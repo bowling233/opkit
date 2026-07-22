@@ -1,0 +1,17 @@
+# Run the opkit MCP server with Streamable HTTP on port 8000.
+#
+# Write your device configuration at config/devices.yaml (see
+# config/devices.example.yaml for the schema); the container reads it as
+# /config/devices.yaml. Point MCP clients at http://<host>:8000/mcp.
+
+services:
+  opkit:
+    build: .
+    image: opkit:latest
+    ports:
+      # Loopback only: keep the dev server off the network.
+      - "[::1]:8000:8000"
+    volumes:
+      # :z relabels the directory for SELinux (required on Fedora hosts).
+      - ./config:/config:ro,z
+    restart: unless-stopped

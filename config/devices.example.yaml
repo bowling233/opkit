@@ -1,0 +1,54 @@
+# opkit example configuration.
+#
+# A device is a machine; each key under it names an access protocol.
+# Credentials live in plaintext by design — keep this file out of VCS.
+
+accounts:
+  - name: lab-admin
+    username: admin
+    password: plaintext-password
+
+  - name: net-op
+    username: root
+    ssh_private_key: |
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      ...
+      -----END OPENSSH PRIVATE KEY-----
+
+  - name: webui-only
+    password: plaintext-password   # enough for ZTE (fixed 'admin' user)
+
+devices:
+  # One box, two channels: out-of-band management plus an OS shell.
+  - name: example-server
+    redfish:
+      endpoint: https://192.0.2.10
+      account: lab-admin
+    ssh-exec:
+      endpoint: 192.0.2.10
+      port: 22
+      account: net-op
+
+  - name: example-switch
+    ssh-terminal:
+      endpoint: 192.0.2.20
+      account: net-op
+
+  - name: example-tplink-switch
+    http:
+      endpoint: http://192.0.2.30
+      auth: tplink
+      account: lab-admin
+
+  - name: example-zte-be7200
+    http:
+      endpoint: http://192.0.2.40
+      auth: zte-be7200
+      account: webui-only
+      username: admin                # protocol-level username overrides the account's
+
+  - name: example-mellanox-onyx
+    http:
+      endpoint: https://192.0.2.50
+      auth: mellanox
+      account: lab-admin

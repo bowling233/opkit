@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+uv.lock
+config/*.local.yaml
+config/*.local.yml
+config/devices.yaml
+HANDOVER.md
