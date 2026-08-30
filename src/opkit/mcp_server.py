@@ -35,7 +35,8 @@ from .protocols.ssh_terminal import (
 
 SERVER_INSTRUCTIONS = """
 Every configured device is a named machine that may expose several access
-protocols at once (see list_devices). All protocols share one lifecycle:
+protocols at once (see list_devices — its descriptions tell you what
+each machine is). All protocols share one lifecycle:
 open_session establishes the connection, a per-protocol operation tool does
 the work, close_session tears it down. Sessions also reap themselves after
 idling, so leaking them is survivable but closing them is polite.
@@ -323,7 +324,12 @@ def _register_tools(mcp: FastMCP, managers: dict[str, Any], config: AppConfig) -
 
     @mcp.tool()
     def list_devices() -> list[DeviceInfo]:
-        """List known devices and the protocols each one speaks."""
+        """List known devices and the protocols each one speaks.
+
+        Each entry carries a short human-written description (vendor,
+        model, role) — read it before connecting instead of guessing
+        from the device name.
+        """
         return [device.public_info() for device in config.devices.values()]
 
     @mcp.tool()

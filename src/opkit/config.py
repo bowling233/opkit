@@ -16,7 +16,7 @@ Credentials live in plaintext by design.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +65,7 @@ class DeviceInfo:
     entry so a whole fleet fits in one cheap tool response."""
 
     name: str
+    description: str
     protocols: dict[str, str]
 
 
@@ -73,11 +74,14 @@ class DeviceConfig:
     """One machine together with every protocol that reaches it."""
 
     name: str
-    protocols: dict[str, Any]
+    # Free-form note (vendor/model/role) shown to agents before they connect.
+    description: str = ""
+    protocols: dict[str, Any] = field(default_factory=dict)
 
     def public_info(self) -> DeviceInfo:
         return DeviceInfo(
             name=self.name,
+            description=self.description,
             protocols={
                 name: entry.brief()
                 for name, entry in self.protocols.items()
@@ -201,7 +205,12 @@ def _load_devices(
         if name in devices:
             raise ConfigError(f"duplicate device name: {name}")
 
-        protocol_keys = [key for key in values if key != "name"]
+        description = values.get("description", "")
+        if not isinstance(description, str):
+            raise ConfigError(
+                f"device {name} description must be a string"
+            )
+        protocol_keys = [key for key in values if key not in ("name", "description")]
         if not protocol_keys:
             raise ConfigError(f"device {name} has no protocols")
         unknown = set(protocol_keys) - set(PARSERS)
@@ -217,5 +226,7 @@ def _load_devices(
                 f"{protocol} config of device {name}", values[protocol]
             )
             protocols[protocol] = PARSERS[protocol](name, raw_config, accounts)
-        devices[name] = DeviceConfig(name=name, protocols=protocols)
+        devices[name] = DeviceConfig(
+            name=name, description=description, protocols=protocols
+        )
     return devices
